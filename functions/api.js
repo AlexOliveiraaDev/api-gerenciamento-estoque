@@ -2,9 +2,12 @@ require('dotenv').config(); // Carregar as variáveis de ambiente do arquivo .en
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
+const serverless = require('serverless-http');
+
 
 const app = express();
 const port = 3000;
+const router = express.Router();
 
 // Middleware para parsear o corpo das requisições
 app.use(express.json());
@@ -29,7 +32,7 @@ db.connect((err) => {
 });
 
 // 1. Ler todos os itens da tabela produtos
-app.get('/produtos', (req, res) => {
+router.get('/produtos', (req, res) => {
     db.query('SELECT * FROM produtos_db', (err, results) => {
         if (err) {
             return res.status(500).json({ error: err.message });
@@ -39,7 +42,7 @@ app.get('/produtos', (req, res) => {
 });
 
 // 2. Inserir um novo item na tabela produtos
-app.post('/produtos', (req, res) => {
+router.post('/produtos', (req, res) => {
     const { produto, categoria, quantidade, preco, localizacao } = req.body;
     const query = 'INSERT INTO produtos_db (produto, categoria, quantidade, preco, localizacao) VALUES (?, ?, ?, ?, ?)';
 
@@ -52,7 +55,7 @@ app.post('/produtos', (req, res) => {
 });
 
 // 3. Apagar um item da tabela produtos
-app.delete('/produtos/:id', (req, res) => {
+router.delete('/produtos/:id', (req, res) => {
     const { id } = req.params;
     db.query('DELETE FROM produtos_db WHERE id = ?', [id], (err, results) => {
         if (err) {
@@ -63,7 +66,7 @@ app.delete('/produtos/:id', (req, res) => {
 });
 
 // 4. Alterar um item da tabela produtos
-app.put('/produtos/:id', (req, res) => {
+router.put('/produtos/:id', (req, res) => {
     const { id } = req.params;
     const { produto, categoria, quantidade, preco, localizacao } = req.body;
     const query = 'UPDATE produtos_db SET produto = ?, categoria = ?, quantidade = ?, preco = ?, localizacao = ? WHERE id = ?';
@@ -77,6 +80,9 @@ app.put('/produtos/:id', (req, res) => {
 });
 
 // Iniciar o servidor
-app.listen(port, () => {
-    console.log(`API rodando em http://localhost:${port}`);
-});
+// app.listen(port, () => {
+//     console.log(`API rodando em http://localhost:${port}`);
+// });
+
+app.use('/api',router)
+module.exports.handler = serverless(app)
