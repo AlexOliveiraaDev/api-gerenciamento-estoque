@@ -74,3 +74,4 @@ router.put('/produtos/:id', (req, res) => {
 
 app.use('/api',router)
 module.exports.handler = serverless(app)
+
